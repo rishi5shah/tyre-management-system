@@ -6,7 +6,7 @@ import {
   Hammer, FileSpreadsheet, Download, Calendar, TrendingUp, TrendingDown, 
   DollarSign, FileText, ScanLine, Gauge, Save, X, MapPin, Briefcase, 
   Layers, ChevronRight, Settings, LogOut, ClipboardCheck, FileCheck, ShieldAlert,
-  Power
+  Power, ArrowLeftRight, LifeBuoy
 } from 'lucide-react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, LineChart, 
@@ -23,12 +23,12 @@ const INITIAL_VEHICLES = [
 ];
 
 const INITIAL_TYRES = [
-  { id: 't1', serial: 'K0117043424', brand: 'Vikrant', model: 'Trak Lug', size: '295/80 R22.5', price: 33700, status: 'RUNNING', lifeCycle: 1, vehicleId: 'v1', position: 'HR/R', totalKm: 25000, vendor: 'Raj Tyres', invoice: 'GST/24-25/112', installDate: '2024-10-18', costHistory: [{type: 'NEW', amount: 33700, date: '2024-10-18'}] },
-  { id: 't2', serial: '57159280822', brand: 'MRF', model: 'Muscle', size: '10.00 R20', price: 4500, status: 'RUNNING', lifeCycle: 2, vehicleId: 'v2', position: 'FH/L', totalKm: 85000, vendor: 'Suraj Tyre Care', invoice: 'GST/25-26/1850', installDate: '2025-11-26', isRemold: true, costHistory: [{type: 'RETREAD', amount: 4500, date: '2025-11-26'}] },
+  { id: 't1', serial: 'K0117043424', brand: 'Vikrant', model: 'Trak Lug', size: '295/80 R22.5', price: 33700, status: 'RUNNING', lifeCycle: 1, vehicleId: 'v1', position: '1L', totalKm: 25000, vendor: 'Raj Tyres', invoice: 'GST/24-25/112', installDate: '2024-10-18', costHistory: [{type: 'NEW', amount: 33700, date: '2024-10-18'}] },
+  { id: 't2', serial: '57159280822', brand: 'MRF', model: 'Muscle', size: '10.00 R20', price: 4500, status: 'RUNNING', lifeCycle: 2, vehicleId: 'v2', position: '1R', totalKm: 85000, vendor: 'Suraj Tyre Care', invoice: 'GST/25-26/1850', installDate: '2025-11-26', isRemold: true, costHistory: [{type: 'RETREAD', amount: 4500, date: '2025-11-26'}] },
   { id: 't3', serial: 'V0126912324', brand: 'JK Tyre', model: 'Jet R Miles', size: '295/80 R22.5', price: 34000, status: 'RETREAD_CENTER', lifeCycle: 1, vehicleId: null, position: null, totalKm: 72000, vendor: 'Maa Krupa Service', invoice: 'Pending', sentDate: '2025-12-01', costHistory: [{type: 'NEW', amount: 34000, date: '2024-01-01'}] },
   { id: 't4', serial: 'K0000811924', brand: 'Vikrant', model: 'Trak Lug', size: '10.00 R20', price: 0, status: 'SCRAP', lifeCycle: 3, vehicleId: null, position: null, totalKm: 145000, vendor: 'Scrap Sale', invoice: 'SALE/23-11', scrapReason: 'Burst/Side Cut', costHistory: [] },
   { id: 't5', serial: 'K0070694925', brand: 'JK Tyre', model: 'Jet Xtra XLM', size: '295/80 R22.5', price: 35000, status: 'STOCK', lifeCycle: 1, vehicleId: null, position: null, totalKm: 0, vendor: 'Raj Tyres', invoice: 'GST/25-26/900', installDate: null, costHistory: [{type: 'NEW', amount: 35000, date: '2025-12-01'}] },
-  { id: 't6', serial: 'K0069954925', brand: 'JK Tyre', model: 'Jet Xtra XLM', size: '295/80 R22.5', price: 35000, status: 'STOCK', lifeCycle: 1, vehicleId: null, position: null, totalKm: 12000, vendor: 'Raj Tyres', invoice: 'GST/25-26/900', installDate: null, costHistory: [{type: 'NEW', amount: 35000, date: '2025-11-01'}] },
+  { id: 't6', serial: 'K0069954925', brand: 'JK Tyre', model: 'Jet Xtra XLM', size: '295/80 R22.5', price: 35000, status: 'RUNNING', lifeCycle: 1, vehicleId: 'v1', position: 'SPARE', totalKm: 12000, vendor: 'Raj Tyres', invoice: 'GST/25-26/900', installDate: null, costHistory: [{type: 'NEW', amount: 35000, date: '2025-11-01'}] },
 ];
 
 const INITIAL_TOOLS = [
@@ -55,7 +55,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   
   // --- PERSISTENT STATE ---
-  // Initialize state from localStorage if available, else use Mock Data
   const [vehicles, setVehicles] = useState(() => {
     const saved = localStorage.getItem('tms_vehicles');
     return saved ? JSON.parse(saved) : INITIAL_VEHICLES;
@@ -82,6 +81,7 @@ export default function App() {
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [showClaimModal, setShowClaimModal] = useState(false);
   const [showReceiveRetreadModal, setShowReceiveRetreadModal] = useState(false);
+  const [showRotateModal, setShowRotateModal] = useState(false);
   const [selectedTyreForAction, setSelectedTyreForAction] = useState(null);
   
   // View State
@@ -131,8 +131,6 @@ export default function App() {
   };
 
   // --- ACTIONS ---
-  
-  // Fleet Status Toggle Action
   const handleToggleVehicleStatus = (vehId) => {
       setVehicles(prev => prev.map(v => {
           if (v.id === vehId) {
@@ -196,14 +194,15 @@ export default function App() {
     }
 
     setVehicles(prev => prev.map(v => v.id === vehId ? { ...v, odometer: parseInt(newOdo) } : v));
+    // UPDATE: Exclude SPARE tyres from KM calculation
     setTyres(prev => prev.map(t => {
-      if (t.vehicleId === vehId && t.status === 'RUNNING') {
+      if (t.vehicleId === vehId && t.status === 'RUNNING' && t.position !== 'SPARE') {
         return { ...t, totalKm: t.totalKm + tripKm };
       }
       return t;
     }));
 
-    showToast(`Trip logged: +${tripKm} KM added to fitted tyres`);
+    showToast(`Trip logged: +${tripKm} KM added to fitted tyres (Excluding Spare)`);
     setShowMileageModal(false);
   };
 
@@ -213,7 +212,6 @@ export default function App() {
     const tyreId = formData.get('tyreId');
     const position = formData.get('position');
     
-    // Check if position is occupied
     const existing = tyres.find(t => t.vehicleId === selectedVehicleId && t.position === position && t.status === 'RUNNING');
     if (existing) {
         showToast(`Position ${position} is already occupied by ${existing.serial}`, 'error');
@@ -228,6 +226,28 @@ export default function App() {
     }));
     setShowFitTyreModal(false);
     showToast('Tyre fitted successfully');
+  };
+
+  const handleRotation = (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const pos1 = formData.get('pos1');
+      const pos2 = formData.get('pos2');
+
+      if (pos1 === pos2) {
+          showToast('Cannot rotate to same position', 'error');
+          return;
+      }
+
+      setTyres(prev => prev.map(t => {
+          if (t.vehicleId === selectedVehicleId && t.status === 'RUNNING') {
+              if (t.position === pos1) return { ...t, position: pos2 };
+              if (t.position === pos2) return { ...t, position: pos1 };
+          }
+          return t;
+      }));
+      setShowRotateModal(false);
+      showToast(`Rotated: ${pos1} ↔ ${pos2}`);
   };
 
   const handleSendToRetread = (e) => {
@@ -259,7 +279,7 @@ export default function App() {
                   status: 'STOCK', 
                   lifeCycle: t.lifeCycle + 1, 
                   isRemold: true,
-                  invoice: invoice, // Update latest invoice
+                  invoice: invoice, 
                   costHistory: [...(t.costHistory || []), {type: 'RETREAD', amount: cost, date: new Date().toISOString().split('T')[0]}]
               };
           }
@@ -284,7 +304,7 @@ export default function App() {
                   vendor: vendor, 
                   claimReason: reason,
                   sentDate: new Date().toISOString().split('T')[0],
-                  vehicleId: null, // Auto unmount from vehicle
+                  vehicleId: null,
                   position: null
               };
           }
@@ -523,7 +543,9 @@ export default function App() {
   const FleetView = () => {
     if (selectedVehicleId) {
        const vehicle = vehicles.find(v => v.id === selectedVehicleId);
-       const fittedTyres = tyres.filter(t => t.vehicleId === selectedVehicleId && t.status === 'RUNNING');
+       const fittedTyres = tyres.filter(t => t.vehicleId === selectedVehicleId && t.status === 'RUNNING' && t.position !== 'SPARE');
+       const spareTyre = tyres.find(t => t.vehicleId === selectedVehicleId && t.status === 'RUNNING' && t.position === 'SPARE');
+       
        return (
           <div className="space-y-6 pb-24 animate-in slide-in-from-right-10">
              <button onClick={() => setSelectedVehicleId(null)} className="flex items-center gap-2 text-slate-500 hover:text-slate-800 text-sm font-medium mb-2">
@@ -546,7 +568,6 @@ export default function App() {
                    </div>
                 </div>
                 <div className="flex items-center gap-3">
-                   {/* Maintenance Toggle Button */}
                    <button 
                      onClick={() => handleToggleVehicleStatus(vehicle.id)}
                      className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-colors ${
@@ -577,7 +598,13 @@ export default function App() {
              {/* Fitted Tyres Grid */}
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                   <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><Disc size={20} className="text-blue-500"/> Fitted Tyres ({fittedTyres.length})</h3>
+                   <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-bold text-lg flex items-center gap-2"><Disc size={20} className="text-blue-500"/> Fitted Tyres ({fittedTyres.length})</h3>
+                        <button onClick={() => setShowRotateModal(true)} className="text-xs bg-slate-100 px-3 py-1.5 rounded-lg font-bold text-slate-600 hover:bg-slate-200 flex items-center gap-1">
+                            <ArrowLeftRight size={14}/> Rotate
+                        </button>
+                   </div>
+                   
                    <div className="space-y-3">
                       {fittedTyres.length > 0 ? fittedTyres.map(tyre => (
                          <div key={tyre.id} className="flex justify-between items-center p-3 border border-slate-100 rounded-xl hover:border-blue-200 transition-colors">
@@ -599,6 +626,36 @@ export default function App() {
                          </div>
                       )}
                    </div>
+
+                   {/* SPARE SECTION */}
+                   <div className="mt-4 pt-4 border-t border-slate-100">
+                       <div className="flex justify-between items-center mb-2">
+                           <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1"><LifeBuoy size={14}/> Stepnie (Spare)</h4>
+                           {!spareTyre && (
+                               <button 
+                                  onClick={() => setShowFitTyreModal(true)} 
+                                  className="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded font-bold"
+                                >
+                                   + Add Spare
+                                </button>
+                           )}
+                       </div>
+                       {spareTyre ? (
+                           <div className="flex justify-between items-center p-3 bg-blue-50/50 border border-blue-100 rounded-xl">
+                                <div className="flex items-center gap-3">
+                                   <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-xs font-bold text-blue-600">ST</div>
+                                   <div>
+                                      <p className="font-bold text-sm text-slate-800">{spareTyre.serial}</p>
+                                      <p className="text-[10px] text-slate-500">{spareTyre.brand} (Spare)</p>
+                                   </div>
+                                </div>
+                                <span className="text-[10px] bg-white px-2 py-1 rounded border border-slate-200 text-slate-500 font-mono">No KM Gain</span>
+                           </div>
+                       ) : (
+                           <p className="text-xs text-slate-400 italic">No spare tyre assigned.</p>
+                       )}
+                   </div>
+
                    <button 
                       onClick={() => setShowFitTyreModal(true)}
                       className="w-full mt-4 py-3 border border-dashed border-slate-300 rounded-xl text-slate-500 font-medium hover:bg-slate-50 hover:border-blue-300 hover:text-blue-600 transition-all flex items-center justify-center gap-2"
@@ -799,6 +856,32 @@ export default function App() {
 
   // --- MODALS (Forms) ---
 
+  const RotationForm = () => (
+      <Modal title="Quick Rotation" onClose={() => setShowRotateModal(false)}>
+          <form onSubmit={handleRotation} className="space-y-4">
+              <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                      <label className="block text-xs font-bold text-slate-500 mb-1">Position A</label>
+                      <select name="pos1" className="w-full p-2 border rounded-lg bg-slate-50">
+                          <option value="1L">1L</option><option value="1R">1R</option>
+                          <option value="2L">2L</option><option value="2R">2R</option>
+                      </select>
+                  </div>
+                  <ArrowLeftRight size={20} className="text-slate-400 mt-4"/>
+                  <div className="flex-1">
+                      <label className="block text-xs font-bold text-slate-500 mb-1">Position B</label>
+                      <select name="pos2" className="w-full p-2 border rounded-lg bg-slate-50">
+                          <option value="1R">1R</option><option value="1L">1L</option>
+                          <option value="2R">2R</option><option value="2L">2L</option>
+                      </select>
+                  </div>
+              </div>
+              <p className="text-xs text-slate-500 text-center">This will instantly swap the tyres on these positions.</p>
+              <button className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors">Confirm Swap</button>
+          </form>
+      </Modal>
+  );
+
   const AddTyreForm = () => (
     <Modal title="Add New Inventory" onClose={() => setShowAddTyreModal(false)}>
        <form onSubmit={handleAddTyre} className="space-y-4">
@@ -913,6 +996,7 @@ export default function App() {
                         <option value="2LI">2LI (Rear Left Inner)</option>
                         <option value="2R">2R (Rear Right Outer)</option>
                         <option value="2RI">2RI (Rear Right Inner)</option>
+                        <option value="SPARE">Stepnie (Spare)</option>
                     </select>
                 </div>
                 <button disabled={stockTyres.length === 0} className="w-full bg-blue-600 disabled:bg-slate-300 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors">Confirm Fitment</button>
@@ -1180,6 +1264,7 @@ export default function App() {
       {showAuditModal && <AuditForm />}
       {showClaimModal && <ClaimForm />}
       {showReceiveRetreadModal && <ReceiveRetreadForm />}
+      {showRotateModal && <RotationForm />}
 
       {/* MOBILE NAV */}
       <div className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 flex justify-around p-2 pb-safe z-50">
