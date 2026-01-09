@@ -6,7 +6,7 @@ import {
   Hammer, FileSpreadsheet, Download, Calendar, TrendingUp, TrendingDown, 
   DollarSign, FileText, ScanLine, Gauge, Save, X, MapPin, Briefcase, 
   Layers, ChevronRight, Settings, LogOut, ClipboardCheck, FileCheck, ShieldAlert,
-  Power, ArrowLeftRight, LifeBuoy
+  Power, ArrowLeftRight, LifeBuoy, Clock
 } from 'lucide-react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, LineChart, 
@@ -23,12 +23,28 @@ const INITIAL_VEHICLES = [
 ];
 
 const INITIAL_TYRES = [
-  { id: 't1', serial: 'K0117043424', brand: 'Vikrant', model: 'Trak Lug', size: '295/80 R22.5', price: 33700, status: 'RUNNING', lifeCycle: 1, vehicleId: 'v1', position: '1L', totalKm: 25000, vendor: 'Raj Tyres', invoice: 'GST/24-25/112', installDate: '2024-10-18', costHistory: [{type: 'NEW', amount: 33700, date: '2024-10-18'}] },
-  { id: 't2', serial: '57159280822', brand: 'MRF', model: 'Muscle', size: '10.00 R20', price: 4500, status: 'RUNNING', lifeCycle: 2, vehicleId: 'v2', position: '1R', totalKm: 85000, vendor: 'Suraj Tyre Care', invoice: 'GST/25-26/1850', installDate: '2025-11-26', isRemold: true, costHistory: [{type: 'RETREAD', amount: 4500, date: '2025-11-26'}] },
-  { id: 't3', serial: 'V0126912324', brand: 'JK Tyre', model: 'Jet R Miles', size: '295/80 R22.5', price: 34000, status: 'RETREAD_CENTER', lifeCycle: 1, vehicleId: null, position: null, totalKm: 72000, vendor: 'Maa Krupa Service', invoice: 'Pending', sentDate: '2025-12-01', costHistory: [{type: 'NEW', amount: 34000, date: '2024-01-01'}] },
-  { id: 't4', serial: 'K0000811924', brand: 'Vikrant', model: 'Trak Lug', size: '10.00 R20', price: 0, status: 'SCRAP', lifeCycle: 3, vehicleId: null, position: null, totalKm: 145000, vendor: 'Scrap Sale', invoice: 'SALE/23-11', scrapReason: 'Burst/Side Cut', costHistory: [] },
-  { id: 't5', serial: 'K0070694925', brand: 'JK Tyre', model: 'Jet Xtra XLM', size: '295/80 R22.5', price: 35000, status: 'STOCK', lifeCycle: 1, vehicleId: null, position: null, totalKm: 0, vendor: 'Raj Tyres', invoice: 'GST/25-26/900', installDate: null, costHistory: [{type: 'NEW', amount: 35000, date: '2025-12-01'}] },
-  { id: 't6', serial: 'K0069954925', brand: 'JK Tyre', model: 'Jet Xtra XLM', size: '295/80 R22.5', price: 35000, status: 'RUNNING', lifeCycle: 1, vehicleId: 'v1', position: 'SPARE', totalKm: 12000, vendor: 'Raj Tyres', invoice: 'GST/25-26/900', installDate: null, costHistory: [{type: 'NEW', amount: 35000, date: '2025-11-01'}] },
+  { 
+    id: 't1', serial: 'K0117043424', brand: 'Vikrant', model: 'Trak Lug', size: '295/80 R22.5', price: 33700, status: 'RUNNING', lifeCycle: 1, vehicleId: 'v1', position: '1L', totalKm: 25000, vendor: 'Raj Tyres', invoice: 'GST/24-25/112', installDate: '2024-10-18', 
+    costHistory: [{type: 'NEW', amount: 33700, date: '2024-10-18'}],
+    history: [
+      { date: '2024-10-18', action: 'PURCHASED', details: 'New from Raj Tyres' },
+      { date: '2024-10-20', action: 'FITTED', details: 'Fitted to GJ-06-AX-8765 at Pos 1L' }
+    ]
+  },
+  { 
+    id: 't2', serial: '57159280822', brand: 'MRF', model: 'Muscle', size: '10.00 R20', price: 4500, status: 'RUNNING', lifeCycle: 2, vehicleId: 'v2', position: '1R', totalKm: 85000, vendor: 'Suraj Tyre Care', invoice: 'GST/25-26/1850', installDate: '2025-11-26', isRemold: true, 
+    costHistory: [{type: 'RETREAD', amount: 4500, date: '2025-11-26'}],
+    history: [
+      { date: '2023-01-10', action: 'PURCHASED', details: 'Cycle 1 New' },
+      { date: '2025-11-01', action: 'SENT_RETREAD', details: 'Sent to Suraj Tyre Care' },
+      { date: '2025-11-26', action: 'REC_RETREAD', details: 'Received back (Cycle 2)' },
+      { date: '2025-11-27', action: 'FITTED', details: 'Fitted to GJ-16-AW-9480 at Pos 1R' }
+    ]
+  },
+  { id: 't3', serial: 'V0126912324', brand: 'JK Tyre', model: 'Jet R Miles', size: '295/80 R22.5', price: 34000, status: 'RETREAD_CENTER', lifeCycle: 1, vehicleId: null, position: null, totalKm: 72000, vendor: 'Maa Krupa Service', invoice: 'Pending', sentDate: '2025-12-01', costHistory: [{type: 'NEW', amount: 34000, date: '2024-01-01'}], history: [] },
+  { id: 't4', serial: 'K0000811924', brand: 'Vikrant', model: 'Trak Lug', size: '10.00 R20', price: 0, status: 'SCRAP', lifeCycle: 3, vehicleId: null, position: null, totalKm: 145000, vendor: 'Scrap Sale', invoice: 'SALE/23-11', scrapReason: 'Burst/Side Cut', costHistory: [], history: [] },
+  { id: 't5', serial: 'K0070694925', brand: 'JK Tyre', model: 'Jet Xtra XLM', size: '295/80 R22.5', price: 35000, status: 'STOCK', lifeCycle: 1, vehicleId: null, position: null, totalKm: 0, vendor: 'Raj Tyres', invoice: 'GST/25-26/900', installDate: null, costHistory: [{type: 'NEW', amount: 35000, date: '2025-12-01'}], history: [{ date: '2025-12-01', action: 'PURCHASED', details: 'In Stock' }] },
+  { id: 't6', serial: 'K0069954925', brand: 'JK Tyre', model: 'Jet Xtra XLM', size: '295/80 R22.5', price: 35000, status: 'RUNNING', lifeCycle: 1, vehicleId: 'v1', position: 'SPARE', totalKm: 12000, vendor: 'Raj Tyres', invoice: 'GST/25-26/900', installDate: null, costHistory: [{type: 'NEW', amount: 35000, date: '2025-11-01'}], history: [] },
 ];
 
 const INITIAL_TOOLS = [
@@ -82,9 +98,9 @@ export default function App() {
   const [showClaimModal, setShowClaimModal] = useState(false);
   const [showReceiveRetreadModal, setShowReceiveRetreadModal] = useState(false);
   const [showRotateModal, setShowRotateModal] = useState(false);
-  const [selectedTyreForAction, setSelectedTyreForAction] = useState(null);
+  const [showTimelineModal, setShowTimelineModal] = useState(false);
   
-  // View State
+  const [selectedTyreForAction, setSelectedTyreForAction] = useState(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState(null);
 
   // --- EFFECT HOOKS FOR PERSISTENCE ---
@@ -130,6 +146,11 @@ export default function App() {
     showToast(`${title} CSV downloaded`);
   };
 
+  const addHistoryLog = (tyre, action, details) => {
+      const newLog = { date: new Date().toISOString().split('T')[0], action, details };
+      return [...(tyre.history || []), newLog];
+  };
+
   // --- ACTIONS ---
   const handleToggleVehicleStatus = (vehId) => {
       setVehicles(prev => prev.map(v => {
@@ -158,7 +179,8 @@ export default function App() {
       totalKm: 0,
       invoice: formData.get('invoice'),
       vehicleId: null, position: null,
-      costHistory: [{type: 'NEW', amount: parseInt(formData.get('price')), date: new Date().toISOString().split('T')[0]}]
+      costHistory: [{type: 'NEW', amount: parseInt(formData.get('price')), date: new Date().toISOString().split('T')[0]}],
+      history: [{ date: new Date().toISOString().split('T')[0], action: 'PURCHASED', details: `New from ${formData.get('vendor')}` }]
     };
     setTyres([...tyres, newTyre]);
     setShowAddTyreModal(false);
@@ -194,7 +216,7 @@ export default function App() {
     }
 
     setVehicles(prev => prev.map(v => v.id === vehId ? { ...v, odometer: parseInt(newOdo) } : v));
-    // UPDATE: Exclude SPARE tyres from KM calculation
+    // Exclude SPARE tyres from KM calculation
     setTyres(prev => prev.map(t => {
       if (t.vehicleId === vehId && t.status === 'RUNNING' && t.position !== 'SPARE') {
         return { ...t, totalKm: t.totalKm + tripKm };
@@ -211,16 +233,25 @@ export default function App() {
     const formData = new FormData(e.target);
     const tyreId = formData.get('tyreId');
     const position = formData.get('position');
+    const vehicle = vehicles.find(v => v.id === selectedVehicleId);
     
+    // --- VALIDATION: Prevent duplicate fitment ---
     const existing = tyres.find(t => t.vehicleId === selectedVehicleId && t.position === position && t.status === 'RUNNING');
     if (existing) {
-        showToast(`Position ${position} is already occupied by ${existing.serial}`, 'error');
+        showToast(`Position ${position} on ${vehicle.regNumber} is already occupied by tyre ${existing.serial}`, 'error');
         return;
     }
 
     setTyres(prev => prev.map(t => {
         if (t.id === tyreId) {
-            return { ...t, status: 'RUNNING', vehicleId: selectedVehicleId, position: position, fitmentDate: new Date().toISOString().split('T')[0] };
+            return { 
+                ...t, 
+                status: 'RUNNING', 
+                vehicleId: selectedVehicleId, 
+                position: position, 
+                fitmentDate: new Date().toISOString().split('T')[0],
+                history: addHistoryLog(t, 'FITTED', `Fitted to ${vehicle.regNumber} at Pos ${position}`)
+            };
         }
         return t;
     }));
@@ -241,8 +272,8 @@ export default function App() {
 
       setTyres(prev => prev.map(t => {
           if (t.vehicleId === selectedVehicleId && t.status === 'RUNNING') {
-              if (t.position === pos1) return { ...t, position: pos2 };
-              if (t.position === pos2) return { ...t, position: pos1 };
+              if (t.position === pos1) return { ...t, position: pos2, history: addHistoryLog(t, 'ROTATED', `Rotated ${pos1} -> ${pos2}`) };
+              if (t.position === pos2) return { ...t, position: pos1, history: addHistoryLog(t, 'ROTATED', `Rotated ${pos2} -> ${pos1}`) };
           }
           return t;
       }));
@@ -258,7 +289,13 @@ export default function App() {
 
       setTyres(prev => prev.map(t => {
           if (t.id === tyreId) {
-              return { ...t, status: 'RETREAD_CENTER', vendor: vendor, sentDate: new Date().toISOString().split('T')[0] };
+              return { 
+                  ...t, 
+                  status: 'RETREAD_CENTER', 
+                  vendor: vendor, 
+                  sentDate: new Date().toISOString().split('T')[0],
+                  history: addHistoryLog(t, 'SENT_RETREAD', `Sent to ${vendor}`)
+              };
           }
           return t;
       }));
@@ -280,7 +317,8 @@ export default function App() {
                   lifeCycle: t.lifeCycle + 1, 
                   isRemold: true,
                   invoice: invoice, 
-                  costHistory: [...(t.costHistory || []), {type: 'RETREAD', amount: cost, date: new Date().toISOString().split('T')[0]}]
+                  costHistory: [...(t.costHistory || []), {type: 'RETREAD', amount: cost, date: new Date().toISOString().split('T')[0]}],
+                  history: addHistoryLog(t, 'REC_RETREAD', `Received from vendor (Cost: ₹${cost})`)
               };
           }
           return t;
@@ -304,8 +342,9 @@ export default function App() {
                   vendor: vendor, 
                   claimReason: reason,
                   sentDate: new Date().toISOString().split('T')[0],
-                  vehicleId: null,
-                  position: null
+                  vehicleId: null, // Auto unmount
+                  position: null,
+                  history: addHistoryLog(t, 'SENT_CLAIM', `Sent to ${vendor} (Reason: ${reason})`)
               };
           }
           return t;
@@ -345,8 +384,8 @@ export default function App() {
 
   const Modal = ({ title, onClose, children }) => (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in">
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5">
-        <div className="bg-slate-900 text-white p-4 flex justify-between items-center">
+      <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5 max-h-[90vh] overflow-y-auto">
+        <div className="bg-slate-900 text-white p-4 flex justify-between items-center sticky top-0 z-10">
           <h3 className="font-bold text-lg">{title}</h3>
           <button onClick={onClose} className="p-1 hover:bg-white/10 rounded"><X size={20} /></button>
         </div>
@@ -528,8 +567,12 @@ export default function App() {
                      </td>
                      <td className="p-4 font-mono font-medium">{tyre.totalKm.toLocaleString()}</td>
                      <td className="p-4 text-right">
-                        <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                           <MoreHorizontal size={18} />
+                        <button 
+                            onClick={() => { setSelectedTyreForAction(tyre.id); setShowTimelineModal(true); }}
+                            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="View History"
+                        >
+                           <Clock size={18} />
                         </button>
                      </td>
                   </tr>
@@ -881,6 +924,30 @@ export default function App() {
           </form>
       </Modal>
   );
+
+  const TimelineModal = () => {
+      const tyre = tyres.find(t => t.id === selectedTyreForAction);
+      if (!tyre) return null;
+
+      return (
+        <Modal title={`History: ${tyre.serial}`} onClose={() => setShowTimelineModal(false)}>
+            <div className="space-y-6 relative pl-4 border-l-2 border-slate-100 ml-2">
+                {tyre.history && tyre.history.length > 0 ? tyre.history.map((event, index) => (
+                    <div key={index} className="relative">
+                        <div className="absolute -left-[25px] top-1 w-4 h-4 bg-blue-500 rounded-full border-4 border-white shadow-sm"></div>
+                        <div className="flex flex-col">
+                            <span className="text-xs text-slate-400 font-mono mb-1">{event.date}</span>
+                            <span className="text-sm font-bold text-slate-800">{event.action.replace('_', ' ')}</span>
+                            <span className="text-xs text-slate-500">{event.details}</span>
+                        </div>
+                    </div>
+                )) : (
+                    <p className="text-sm text-slate-400 italic">No history recorded yet.</p>
+                )}
+            </div>
+        </Modal>
+      );
+  };
 
   const AddTyreForm = () => (
     <Modal title="Add New Inventory" onClose={() => setShowAddTyreModal(false)}>
@@ -1265,6 +1332,7 @@ export default function App() {
       {showClaimModal && <ClaimForm />}
       {showReceiveRetreadModal && <ReceiveRetreadForm />}
       {showRotateModal && <RotationForm />}
+      {showTimelineModal && <TimelineModal />}
 
       {/* MOBILE NAV */}
       <div className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 flex justify-around p-2 pb-safe z-50">
